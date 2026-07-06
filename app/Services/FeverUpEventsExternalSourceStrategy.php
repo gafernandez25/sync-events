@@ -73,7 +73,7 @@ class FeverUpEventsExternalSourceStrategy implements EventsExternalSourceInterfa
                         'ends_at' => CarbonImmutable::parse($endsAt),
                         'min_price' => $minPrice,
                         'max_price' => $maxPrice,
-                        'last_seen_at' => $now,
+                        'last_synced_at' => $now,
                     ],
                 );
 

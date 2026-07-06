@@ -21,7 +21,7 @@ return new class extends Migration
             $table->dateTime('ends_at');
             $table->decimal('min_price', 10, 2)->nullable();
             $table->decimal('max_price', 10, 2)->nullable();
-            $table->dateTime('last_seen_at')->nullable();
+            $table->dateTime('last_synced_at')->nullable();
             $table->timestamps();
 
             $table->unique(['provider', 'external_base_plan_id', 'external_plan_id']);

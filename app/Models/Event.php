@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'provider',
         'external_base_plan_id',
@@ -15,7 +18,7 @@ class Event extends Model
         'ends_at',
         'min_price',
         'max_price',
-        'last_seen_at',
+        'last_synced_at',
     ];
 
     protected function casts(): array
@@ -23,7 +26,7 @@ class Event extends Model
         return [
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
-            'last_seen_at' => 'datetime',
+            'last_synced_at' => 'datetime',
             'min_price' => 'float',
             'max_price' => 'float',
         ];
