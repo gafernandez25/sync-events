@@ -80,3 +80,72 @@ We value your time and effort! Please take a moment to share your thoughts on ou
 [📋 Feedback Form](https://forms.gle/6NdDApby6p3hHsWp8)
 
 Thank you for participating, and good luck! 🎉
+
+## Solution
+
+### Requirements
+
+- Docker
+- Docker Compose
+
+The application runs inside Docker, so PHP and Composer do not need to be installed locally.
+
+### Getting started
+
+#### 1. Clone the repository
+
+```bash
+git clone git@github.com:FeverCodeChallenge/GuillermoFernandez.git fever
+cd fever
+```
+
+You can change the destination directory name
+
+#### 2. Deploy the application
+
+```bash
+make run
+```
+
+Laravel will ask if it should create the SQLite database file. Answer `yes`.
+
+The API will be available at:
+
+```bash
+http://localhost:8083
+```
+
+".env" file should have this line.
+
+```env
+DB_CONNECTION=sqlite
+```
+
+#### 3. Populate the database with data from external provider
+
+```bash
+docker compose exec php-fpm php artisan events:sync
+```
+
+It's possible that this command fails because the external API is not 100% reliable. It can be run all the times you want.
+
+### Running the tests
+
+To run the full test suite:
+
+```bash
+docker compose exec php-fpm php artisan test
+```
+
+Alternatively, PHPUnit can be executed directly:
+
+```bash
+docker compose exec php-fpm ./vendor/bin/phpunit
+```
+
+### API endpoints
+
+#### List events
+```http
+http://localhost:8083/api/v1/events/search?starts_at=2021-07-31T00:00:00Z&ends_at=2021-12-31T21:00:00Z
+```
