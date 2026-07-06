@@ -26,7 +26,6 @@ return new class extends Migration
 
             $table->unique(['provider', 'external_base_plan_id', 'external_plan_id']);
 
-            $table->index('external_base_plan_id');
             $table->index('starts_at');
             $table->index('ends_at');
             $table->index(['starts_at', 'ends_at']);
