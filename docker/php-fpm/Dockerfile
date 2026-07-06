@@ -18,4 +18,5 @@ RUN set -eux; \
     install-php-extensions \
     	xdebug \
         simplexml \
+        http \
     ;
