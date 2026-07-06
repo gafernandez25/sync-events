@@ -7,6 +7,9 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "ext-http": "^4.3",
+        "ext-libxml": "*",
+        "ext-simplexml": "*",
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0"
     },
