@@ -83,6 +83,60 @@ Thank you for participating, and good luck! 🎉
 
 ## Solution
 
+This solution implements a Laravel-based microservice that exposes a single search endpoint for Fever marketplace events.
+
+The main design decision is to keep the public search endpoint completely independent from the external provider availability. Instead of calling the provider on every API request, the application synchronizes provider data into a local database through an Artisan command. The API then reads only from local persisted data, which allows it to respond quickly even if the external provider is slow, unavailable, or returning invalid responses.
+
+Only plans with `sell_mode="online"` are stored. Once a plan has been synchronized, it remains available in the local database, even if it disappears from future provider responses. This satisfies the requirement that past plans should still be retrievable.
+
+### Design choices
+
+- **Local persistence first**: the API does not depend on the external provider during user requests.
+- **Resilient synchronization**: provider failures are handled in the synchronization command and logged without breaking the search endpoint.
+- **Historical availability**: synchronized plans are not deleted when they disappear from the provider response.
+- **Provider abstraction**: external sources are represented through a contract, making it easier to add more providers in the future.
+- **Simple deployment**: Docker Compose and a `Makefile` are provided so the application can be started with a single command.
+- **SQLite for the challenge**: SQLite keeps the setup simple and portable. For production, the same model could be moved to PostgreSQL or MySQL with proper indexing.
+
+### Synchronization flow
+
+```mermaid
+sequenceDiagram
+    participant Command as events:sync
+    participant Provider as External Provider
+    participant Parser as XML Parser
+    participant DB as Database
+
+    Command->>Provider: Fetch XML events
+    Provider-->>Command: XML response
+    Command->>Parser: Parse base plans and plans
+    Parser-->>Command: Normalized event data
+    Command->>DB: Upsert online plans
+```
+
+### Request flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    participant DB
+
+    Client->>API: GET /api/v1/events/search?starts_at=...&ends_at=...
+    API->>API: Validate query parameters
+    API->>DB: Search events within date range
+    DB-->>API: Matching events
+    API-->>Client: JSON response
+```
+
+### Implementation details
+
+The synchronization command fetches the XML from the provider, parses all `base_plan` nodes, filters out non-online plans, extracts the relevant plans and zones, calculates minimum and maximum prices, and stores the normalized data in the `events` table.
+
+The search endpoint receives `starts_at` and `ends_at` query parameters and returns the events that match the requested time range using the locally stored data.
+
+This approach makes the API fast and predictable because request latency depends mainly on the database query, not on external network calls.
+
 ### Requirements
 
 - Docker
