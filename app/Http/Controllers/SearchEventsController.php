@@ -10,6 +10,8 @@ use Illuminate\Http\JsonResponse;
 
 class SearchEventsController extends Controller
 {
+    private const int LIMIT = 100;
+
     public function index(IndexRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -21,6 +23,7 @@ class SearchEventsController extends Controller
             ->where('starts_at', '>=', $startsAt)
             ->where('ends_at', '<=', $endsAt)
             ->orderBy('starts_at')
+            ->limit(self::LIMIT)
             ->get();
 
         return response()->json([
