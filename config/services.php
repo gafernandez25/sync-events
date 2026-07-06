@@ -35,4 +35,7 @@ return [
         ],
     ],
 
+    'fever_provider' => [
+        'url' => env('FEVER_PROVIDER_URL', 'https://provider.code-challenge.feverup.com/api/events'),
+    ],
 ];
