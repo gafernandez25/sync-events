@@ -5,6 +5,7 @@ run: up install env key migrate permissions cache-clear
 	@echo "API available at: http://localhost:8083"
 
 up:
+	docker compose down
 	docker compose up -d --build
 
 install:
