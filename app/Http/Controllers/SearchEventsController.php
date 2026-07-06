@@ -11,7 +11,6 @@ use Illuminate\Http\JsonResponse;
 class SearchEventsController extends Controller
 {
     public function index(IndexRequest $request): JsonResponse
-
     {
         $validated = $request->validated();
 
