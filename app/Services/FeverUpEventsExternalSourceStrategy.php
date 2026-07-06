@@ -3,19 +3,24 @@
 namespace App\Services;
 
 use App\Models\Event;
+use App\Services\Contracts\EventsExternalSourceInterface;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use RuntimeException;
 use SimpleXMLElement;
 
-class ExternalEventsService
+class FeverUpEventsExternalSourceStrategy implements EventsExternalSourceInterface
 {
     private const string PROVIDER = 'fever_provider';
 
     public function __construct(
         private readonly Client $client,
     ) {
+    }
+
+    public function name(): string{
+        return self::PROVIDER;
     }
 
     public function sync(): int

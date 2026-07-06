@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\ExternalEventsService;
+use App\Services\Contracts\EventsExternalSourceInterface;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -13,23 +13,45 @@ use Throwable;
 #[Description('Synchronize events from external provider')]
 class SyncExternalEventsCommand extends Command
 {
-    public function handle(ExternalEventsService $externalEventsService): int
+    /**
+     * @var EventsExternalSourceInterface[]
+     */
+    private array $externalSources;
+
+    public function __construct(EventsExternalSourceInterface ...$externalSources)
     {
-        try {
-            $syncedEvents = $externalEventsService->sync();
-
-            $this->info("Events synchronized: {$syncedEvents}");
-
-            Log::info("Events synchronized: {$syncedEvents}");
-            return self::SUCCESS;
-        } catch (Throwable $exception) {
-            report($exception);
-
-            $this->error('Could not synchronize external events.');
-
-            Log::error('Could not synchronize external events.', ['exception' => $exception]);
-            return self::FAILURE;
-        }
+        parent::__construct();
+        $this->externalSources = $externalSources;
     }
 
+    public function handle(): int
+    {
+        $hasFailures = false;
+
+        foreach ($this->externalSources as $externalSource) {
+            $sourceName = $externalSource->name();
+
+            try {
+                $syncedEvents = $externalSource->sync();
+
+                $this->info("Events synchronized from {$sourceName}: {$syncedEvents}");
+
+                Log::info('External events synchronized.', [
+                    'source' => $sourceName,
+                    'synced_events' => $syncedEvents,
+                ]);
+            } catch (Throwable $exception) {
+                $hasFailures = true;
+
+                $this->error("Could not synchronize external events from {$sourceName}.");
+
+                Log::error('Could not synchronize external events from provider.', [
+                    'source' => $sourceName,
+                    'exception' => $exception,
+                ]);
+            }
+        }
+
+        return $hasFailures ? self::FAILURE : self::SUCCESS;
+    }
 }
