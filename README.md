@@ -169,13 +169,6 @@ DB_CONNECTION=sqlite
 FEVER_PROVIDER_URL=https://provider.code-challenge.feverup.com/api/events
 ```
 
-### API endpoints
-
-#### List events
-```bash
-http://localhost:8083/api/v1/events/search?starts_at=2021-01-31T00:00:00Z&ends_at=2021-12-31T21:00:00Z
-```
-
 #### 3. Populate the database with data from external provider
 
 ```bash
@@ -185,6 +178,13 @@ docker compose exec php-fpm php artisan events:sync
 ⚠️ It's possible that this command fails because the external API is not 100% reliable. It can be run all the times you want.
 
 ![External API failure example](docs/images/api-sync-warning.png)
+
+### API endpoints
+
+#### List events
+```bash
+http://localhost:8083/api/v1/events/search?starts_at=2021-01-31T00:00:00Z&ends_at=2021-12-31T21:00:00Z
+```
 
 ### Running the tests
 
