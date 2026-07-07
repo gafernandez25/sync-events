@@ -184,6 +184,8 @@ docker compose exec php-fpm php artisan events:sync
 
 ⚠️ It's possible that this command fails because the external API is not 100% reliable. It can be run all the times you want.
 
+![External API failure example](docs/images/api-sync-warning.png)
+
 ### Running the tests
 
 To run the full test suite:
