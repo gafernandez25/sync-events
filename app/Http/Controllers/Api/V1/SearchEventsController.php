@@ -29,7 +29,7 @@ class SearchEventsController extends Controller
 
         return response()->json([
             'data' => [
-                'events' => EventResource::collection($events)->resolve($request),
+                'events' => EventResource::collection($events),
             ],
             'error' => null,
         ]);
