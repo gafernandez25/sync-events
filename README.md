@@ -173,7 +173,7 @@ FEVER_PROVIDER_URL=https://provider.code-challenge.feverup.com/api/events
 
 #### List events
 ```bash
-http://localhost:8083/api/v1/events/search?starts_at=2021-07-31T00:00:00Z&ends_at=2021-12-31T21:00:00Z
+http://localhost:8083/api/v1/events/search?starts_at=2021-01-31T00:00:00Z&ends_at=2021-12-31T21:00:00Z
 ```
 
 #### 3. Populate the database with data from external provider
