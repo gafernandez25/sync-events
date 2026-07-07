@@ -18,7 +18,7 @@ key:
 	docker compose exec php-fpm php artisan key:generate
 
 migrate:
-	docker compose exec php-fpm php artisan migrate
+	yes | docker compose exec php-fpm php artisan migrate
 
 permissions:
 	docker compose exec php-fpm chmod -R 775 storage bootstrap/cache database
