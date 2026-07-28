@@ -19,4 +19,5 @@ RUN set -eux; \
     	xdebug \
         simplexml \
         http \
+        pdo_mysql \
     ;
