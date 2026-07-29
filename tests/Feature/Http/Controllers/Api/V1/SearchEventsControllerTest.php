@@ -3,13 +3,13 @@
 namespace Tests\Feature\Http\Controllers\Api\V1;
 
 use App\Models\Event;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class SearchEventsControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseMigrations;
 
     public function test_it_retrieves_events(): void
     {

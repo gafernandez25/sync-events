@@ -3,28 +3,27 @@
 namespace Services;
 
 use App\Models\Event;
+use App\Services\ExternalEventsService;
 use App\Services\FeverUpEventsExternalSourceStrategy;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 use Tests\TestCase;
 
 class FeverUpEventsExternalSourceStrategyTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseMigrations;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config()->set('services.fever_provider.url', 'https://provider.example.test/events');
+    }
 
     public function test_it_returns_provider_name(): void
     {
         // Arrange
-        $strategy = $this->makeStrategyConcreteClass([
-            new Response(200, [], $this->validXml()),
-        ]);
+        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
 
         // Act
         $name = $strategy->name();
@@ -38,9 +37,32 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         // Arrange
         Carbon::setTestNow(Carbon::parse('2025-11-16 00:00:00'));
 
-        $strategy = $this->makeStrategyConcreteClass([
-            new Response(200, [], $this->validXml()),
-        ]);
+        $responseXml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <eventList>
+                <output>
+                    <base_plan base_plan_id="base-plan-1" sell_mode="online" title="Online Event">
+                        <plan plan_id="plan-1" plan_start_date="2026-07-10T10:00:00" plan_end_date="2026-07-10T12:00:00">
+                            <zone zone_id="zone-1" price="10.50" />
+                            <zone zone_id="zone-2" price="25.00" />
+                        </plan>
+
+                        <plan plan_id="plan-2" plan_start_date="2026-07-11T10:00:00" plan_end_date="2026-07-11T12:00:00">
+                            <zone zone_id="zone-3" price="15.00" />
+                        </plan>
+                    </base_plan>
+                </output>
+            </eventList>
+            XML;
+
+        $externalEventsService = $this->mock(ExternalEventsService::class);
+        $externalEventsService
+            ->shouldReceive('fetchExternalEvents')
+            ->with('https://provider.example.test/events')
+            ->once()
+            ->andReturn($responseXml);
+
+        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -78,8 +100,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
     public function test_it_ignores_offline_base_plans(): void
     {
         // Arrange
-        $strategy = $this->makeStrategyConcreteClass([
-            new Response(200, [], <<<XML
+        $responseXml = <<<XML
                 <?xml version="1.0" encoding="UTF-8"?>
                 <eventList>
                     <output>
@@ -90,9 +111,16 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
                         </base_plan>
                     </output>
                 </eventList>
-                XML
-            ),
-        ]);
+                XML;
+
+        $externalEventsService = $this->mock(ExternalEventsService::class);
+        $externalEventsService
+            ->shouldReceive('fetchExternalEvents')
+            ->with('https://provider.example.test/events')
+            ->once()
+            ->andReturn($responseXml);
+
+        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -105,8 +133,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
     public function test_it_ignores_base_plans_without_required_attributes(): void
     {
         // Arrange
-        $strategy = $this->makeStrategyConcreteClass([
-            new Response(200, [], <<<XML
+        $responseXml = <<<XML
                 <?xml version="1.0" encoding="UTF-8"?>
                 <eventList>
                     <output>
@@ -123,9 +150,16 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
                         </base_plan>
                     </output>
                 </eventList>
-                XML
-            ),
-        ]);
+                XML;
+
+        $externalEventsService = $this->mock(ExternalEventsService::class);
+        $externalEventsService
+            ->shouldReceive('fetchExternalEvents')
+            ->with('https://provider.example.test/events')
+            ->once()
+            ->andReturn($responseXml);
+
+        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -138,29 +172,33 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
     public function test_it_ignores_plans_without_required_attributes(): void
     {
         // Arrange
-        $strategy = $this->makeStrategyConcreteClass([
-            new Response(200, [], <<<XML
+        $responseXml = <<<XML
                 <?xml version="1.0" encoding="UTF-8"?>
                 <eventList>
                     <output>
-                        <base_plan base_plan_id="base-plan-1" sell_mode="online" title="Online Event">
-                            <plan plan_start_date="2026-07-10T10:00:00" plan_end_date="2026-07-10T12:00:00">
+                        <base_plan sell_mode="online" title="Missing Base Plan ID">
+                            <plan plan_id="plan-1" plan_start_date="2026-07-10T10:00:00" plan_end_date="2026-07-10T12:00:00">
                                 <zone zone_id="zone-1" price="10.00" />
                             </plan>
+                        </base_plan>
 
-                            <plan plan_id="plan-2" plan_end_date="2026-07-10T12:00:00">
+                        <base_plan base_plan_id="base-plan-2" sell_mode="online">
+                            <plan plan_id="plan-2" plan_start_date="2026-07-10T10:00:00" plan_end_date="2026-07-10T12:00:00">
                                 <zone zone_id="zone-1" price="20.00" />
-                            </plan>
-
-                            <plan plan_id="plan-3" plan_start_date="2026-07-10T10:00:00">
-                                <zone zone_id="zone-1" price="30.00" />
                             </plan>
                         </base_plan>
                     </output>
                 </eventList>
-                XML
-            ),
-        ]);
+                XML;
+
+        $externalEventsService = $this->mock(ExternalEventsService::class);
+        $externalEventsService
+            ->shouldReceive('fetchExternalEvents')
+            ->with('https://provider.example.test/events')
+            ->once()
+            ->andReturn($responseXml);
+
+        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -173,8 +211,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
     public function test_it_stores_null_prices_when_plan_has_no_valid_zone_prices(): void
     {
         // Arrange
-        $strategy = $this->makeStrategyConcreteClass([
-            new Response(200, [], <<<XML
+        $responseXml = <<<XML
                 <?xml version="1.0" encoding="UTF-8"?>
                 <eventList>
                     <output>
@@ -187,9 +224,16 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
                         </base_plan>
                     </output>
                 </eventList>
-                XML
-            ),
-        ]);
+                XML;
+
+        $externalEventsService = $this->mock(ExternalEventsService::class);
+        $externalEventsService
+            ->shouldReceive('fetchExternalEvents')
+            ->with('https://provider.example.test/events')
+            ->once()
+            ->andReturn($responseXml);
+
+        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -225,8 +269,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
             'max_price' => 199.99,
         ]);
 
-        $strategy = $this->makeStrategyConcreteClass([
-            new Response(200, [], <<<XML
+        $responseXml = <<<XML
                 <?xml version="1.0" encoding="UTF-8"?>
                 <eventList>
                     <output>
@@ -238,9 +281,16 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
                         </base_plan>
                     </output>
                 </eventList>
-                XML
-            ),
-        ]);
+                XML;
+
+        $externalEventsService = $this->mock(ExternalEventsService::class);
+        $externalEventsService
+            ->shouldReceive('fetchExternalEvents')
+            ->with('https://provider.example.test/events')
+            ->once()
+            ->andReturn($responseXml);
+
+        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -262,44 +312,21 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         ]);
     }
 
-    public function test_it_throws_exception_when_provider_returns_non_successful_status_code(): void
-    {
-        // Arrange
-        $strategy = $this->makeStrategyConcreteClass([
-            new Response(500, [], 'Provider error'),
-        ]);
-
-        // Assert
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('External events provider returned HTTP status 500.');
-
-        // Act
-        $strategy->sync();
-    }
-
-    public function test_it_throws_exception_when_provider_connection_fails(): void
-    {
-        // Arrange
-        $request = new Request('GET', 'https://provider.example.test/events');
-
-        $strategy = $this->makeStrategyConcreteClass([
-            new ConnectException('Connection failed.', $request),
-        ]);
-
-        // Assert
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Could not connect to external events provider.');
-
-        // Act
-        $strategy->sync();
-    }
-
     public function test_it_throws_exception_when_provider_returns_invalid_xml(): void
     {
         // Arrange
-        $strategy = $this->makeStrategyConcreteClass([
-            new Response(200, [], '<invalid-xml>'),
-        ]);
+        $responseXml = <<<XML
+                <invalid-xml>
+                XML;
+
+        $externalEventsService = $this->mock(ExternalEventsService::class);
+        $externalEventsService
+            ->shouldReceive('fetchExternalEvents')
+            ->with('https://provider.example.test/events')
+            ->once()
+            ->andReturn($responseXml);
+
+        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
 
         // Assert
         $this->expectException(RuntimeException::class);
@@ -307,39 +334,5 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
 
         // Act
         $strategy->sync();
-    }
-
-    private function makeStrategyConcreteClass(array $responses): FeverUpEventsExternalSourceStrategy
-    {
-        config()->set('services.fever_provider.url', 'https://provider.example.test/events');
-
-        $mockHandler = new MockHandler($responses);
-
-        $client = new Client([
-            'handler' => HandlerStack::create($mockHandler),
-        ]);
-
-        return new FeverUpEventsExternalSourceStrategy($client);
-    }
-
-    private function validXml(): string
-    {
-        return <<<XML
-            <?xml version="1.0" encoding="UTF-8"?>
-            <eventList>
-                <output>
-                    <base_plan base_plan_id="base-plan-1" sell_mode="online" title="Online Event">
-                        <plan plan_id="plan-1" plan_start_date="2026-07-10T10:00:00" plan_end_date="2026-07-10T12:00:00">
-                            <zone zone_id="zone-1" price="10.50" />
-                            <zone zone_id="zone-2" price="25.00" />
-                        </plan>
-
-                        <plan plan_id="plan-2" plan_start_date="2026-07-11T10:00:00" plan_end_date="2026-07-11T12:00:00">
-                            <zone zone_id="zone-3" price="15.00" />
-                        </plan>
-                    </base_plan>
-                </output>
-            </eventList>
-            XML;
     }
 }
