@@ -7,6 +7,7 @@ use App\Services\Contracts\EventsExternalSourceInterface;
 use App\ValueObjects\Events\EventIdentityVO;
 use App\ValueObjects\Events\EventPayloadVO;
 use Carbon\CarbonImmutable;
+use GuzzleHttp\RequestOptions;
 use SimpleXMLElement;
 
 class FeverUpEventsExternalSourceStrategy implements EventsExternalSourceInterface
@@ -27,7 +28,12 @@ class FeverUpEventsExternalSourceStrategy implements EventsExternalSourceInterfa
 
     public function sync(): int
     {
-        $xmlContent = $this->externalEventsService->fetchExternalEvents(config('services.fever_provider.url'));
+        $xmlContent = $this->externalEventsService->fetchExternalEvents(
+            uri: config('services.fever_provider.url'),
+            headers: [
+                'Accept' => 'application/xml',
+            ],
+        );
 
         $xml = $this->xmlService->parseXml($xmlContent);
 

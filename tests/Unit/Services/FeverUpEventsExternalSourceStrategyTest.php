@@ -58,7 +58,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         $externalEventsService = $this->mock(ExternalEventsService::class);
         $externalEventsService
             ->shouldReceive('fetchExternalEvents')
-            ->with('https://provider.example.test/events')
+            ->withSomeOfArgs('https://provider.example.test/events')
             ->once()
             ->andReturn($responseXml);
 
@@ -116,7 +116,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         $externalEventsService = $this->mock(ExternalEventsService::class);
         $externalEventsService
             ->shouldReceive('fetchExternalEvents')
-            ->with('https://provider.example.test/events')
+            ->withSomeOfArgs('https://provider.example.test/events')
             ->once()
             ->andReturn($responseXml);
 
@@ -155,7 +155,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         $externalEventsService = $this->mock(ExternalEventsService::class);
         $externalEventsService
             ->shouldReceive('fetchExternalEvents')
-            ->with('https://provider.example.test/events')
+            ->withSomeOfArgs('https://provider.example.test/events')
             ->once()
             ->andReturn($responseXml);
 
@@ -194,7 +194,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         $externalEventsService = $this->mock(ExternalEventsService::class);
         $externalEventsService
             ->shouldReceive('fetchExternalEvents')
-            ->with('https://provider.example.test/events')
+            ->withSomeOfArgs('https://provider.example.test/events')
             ->once()
             ->andReturn($responseXml);
 
@@ -229,7 +229,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         $externalEventsService = $this->mock(ExternalEventsService::class);
         $externalEventsService
             ->shouldReceive('fetchExternalEvents')
-            ->with('https://provider.example.test/events')
+            ->withSomeOfArgs('https://provider.example.test/events')
             ->once()
             ->andReturn($responseXml);
 
@@ -286,7 +286,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         $externalEventsService = $this->mock(ExternalEventsService::class);
         $externalEventsService
             ->shouldReceive('fetchExternalEvents')
-            ->with('https://provider.example.test/events')
+            ->withSomeOfArgs('https://provider.example.test/events')
             ->once()
             ->andReturn($responseXml);
 
@@ -322,7 +322,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         $externalEventsService = $this->mock(ExternalEventsService::class);
         $externalEventsService
             ->shouldReceive('fetchExternalEvents')
-            ->with('https://provider.example.test/events')
+            ->withSomeOfArgs('https://provider.example.test/events')
             ->once()
             ->andReturn($responseXml);
 

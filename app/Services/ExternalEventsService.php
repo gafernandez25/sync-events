@@ -13,22 +13,18 @@ class ExternalEventsService
     {
     }
 
-    public function fetchExternalEvents(string $uri, string $method = 'GET', array $options = []): string
+    public function fetchExternalEvents(string $uri, string $method = 'GET', array $headers = []): string
     {
-        $defaultOptions = [
-            RequestOptions::TIMEOUT => 5,
-            RequestOptions::CONNECT_TIMEOUT => 2,
-            RequestOptions::HTTP_ERRORS => false,
-            RequestOptions::HEADERS => [
-                'Accept' => 'application/xml',
-            ],
-        ];
-
         try {
             $response = $this->client->request(
                 $method,
                 $uri,
-                array_replace_recursive($defaultOptions, $options),
+                [
+                    RequestOptions::TIMEOUT => 5,
+                    RequestOptions::CONNECT_TIMEOUT => 2,
+                    RequestOptions::HTTP_ERRORS => false,
+                    RequestOptions::HEADERS => $headers,
+                ],
             );
         } catch (GuzzleException $exception) {
             throw new RuntimeException('Could not connect to external events provider.', previous: $exception);
