@@ -7,7 +7,6 @@ use App\Services\Contracts\EventsExternalSourceInterface;
 use App\ValueObjects\Events\EventIdentityVO;
 use App\ValueObjects\Events\EventPayloadVO;
 use Carbon\CarbonImmutable;
-use GuzzleHttp\RequestOptions;
 use SimpleXMLElement;
 
 class FeverUpEventsExternalSourceStrategy implements EventsExternalSourceInterface
