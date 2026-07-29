@@ -1,11 +1,11 @@
-.PHONY: run up install env key migrate permissions cache-clear
+.PHONY: run up install env key migrate permissions cache-clear test
 
-run: up install env key migrate permissions cache-clear
+run: env up install key permissions cache-clear migrate
 	@echo "Application ready."
-	@echo "API available at: http://localhost:8083"
+	@echo "API available at: http://localhost:806"
 
 up:
-	docker compose down
+	docker compose down -v
 	docker compose up -d --build
 
 install:
@@ -18,10 +18,7 @@ key:
 	docker compose exec php-fpm php artisan key:generate
 
 migrate:
-	docker compose exec -T php-fpm sh -c '\
-		rm -f database/database.sqlite && \
-		touch database/database.sqlite && \
-		php artisan migrate --force'
+	docker compose exec -T php-fpm sh -c 'php artisan migrate --force'
 
 permissions:
 	docker compose exec php-fpm chmod -R 775 storage bootstrap/cache database
@@ -29,3 +26,9 @@ permissions:
 
 cache-clear:
 	docker compose exec php-fpm php artisan config:clear
+
+test:
+	docker compose exec php-fpm php artisan test
+
+sync-events:
+	docker compose exec php-fpm php artisan events:sync

@@ -1,69 +1,64 @@
 services:
-  webserver:
-    container_name: events-nginx
-    restart: unless-stopped
-    image: nginx:alpine
-    ports:
-      - "806:80"
-    volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./public:/application/public
+    nginx:
+        restart: unless-stopped
+        image: nginx:1.28-alpine
+        ports:
+            - "806:80"
+        volumes:
+            - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+            - ./public:/application/public
 
-  php-fpm:
-    container_name: events-php-fpm
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: docker/php-fpm/Dockerfile
-      target: development
-    volumes:
-      - .:/application
-    working_dir: /application
-    environment:
-      XDEBUG_MODE: 'debug,develop'
-      PHP_IDE_CONFIG: 'serverName=events'
-    extra_hosts:
-      # Ensure that host.docker.internal is correctly defined on Linux
-      - host.docker.internal:host-gateway
+    php-fpm:
+        restart: unless-stopped
+        depends_on:
+            db:
+                condition: service_healthy
+        build:
+            context: .
+            dockerfile: docker/php-fpm/Dockerfile
+            target: development
+        volumes:
+            - .:/application
+        working_dir: /application
+        environment:
+            XDEBUG_MODE: 'debug,develop'
+            PHP_IDE_CONFIG: 'serverName=events'
+        extra_hosts:
+            # Ensure that host.docker.internal is correctly defined on Linux
+            - host.docker.internal:host-gateway
 
-  db:
-      container_name: events-db
-      image: mysql:8.0.30
-      restart: unless-stopped
-      volumes:
-          - mysql_data:/var/lib/mysql
-      environment:
-          MYSQL_ROOT_PASSWORD: 1234
-          MYSQL_USER: user
-          MYSQL_PASSWORD: 1234
-          MYSQL_DATABASE: main_db
-      ports:
-          - "33066:3306"
-  test-db:
-      container_name: events-test-db
-      image: mysql:8.0.30
-      restart: unless-stopped
-      environment:
-          MYSQL_ROOT_PASSWORD: 1234
-          MYSQL_USER: user
-          MYSQL_PASSWORD: 1234
-          MYSQL_DATABASE: test_db
-      ports:
-          - "33166:3306"
-  phpmyadmin:
-      depends_on:
-          - db
-          - test-db
-      container_name: events-phpmyadmin
-      image: phpmyadmin/phpmyadmin
-      ports:
-          - "8006:80"
-      restart: unless-stopped
-      environment:
-          - PMA_ARBITRARY=1
-          - UPLOAD_LIMIT=300000000
-          - MYSQL_ROOT_PASSWORD=1234
-          - PMA_HOST=db
+    db:
+        image: mysql:8.0.30
+        healthcheck:
+            test:  [
+                "CMD-SHELL",
+                "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD --silent"
+            ]
+            interval: 5s
+            timeout: 3s
+            retries: 10
+        restart: unless-stopped
+        volumes:
+            - mysql_data:/var/lib/mysql
+            - ./docker/mysql/init:/docker-entrypoint-initdb.d
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+            MYSQL_USER: ${MYSQL_USER:-app}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD:-app}
+        ports:
+            - "33066:3306"
+    phpmyadmin:
+        depends_on:
+            db:
+                condition: service_healthy
+        image: phpmyadmin:5.2.2
+        ports:
+            - "8006:80"
+        restart: unless-stopped
+        environment:
+            - PMA_ARBITRARY=1
+            - UPLOAD_LIMIT=300000000
+            - PMA_HOST=db
 
 volumes:
     mysql_data:
