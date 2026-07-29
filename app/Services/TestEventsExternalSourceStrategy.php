@@ -9,9 +9,9 @@ use App\ValueObjects\Events\EventPayloadVO;
 use Carbon\CarbonImmutable;
 use SimpleXMLElement;
 
-class FeverUpEventsExternalSourceStrategy implements EventsExternalSourceInterface
+class TestEventsExternalSourceStrategy implements EventsExternalSourceInterface
 {
-    private const string PROVIDER = 'fever_provider';
+    private const string PROVIDER = 'test_provider';
 
     public function __construct(
         private readonly ExternalEventsService $externalEventsService,
@@ -28,7 +28,7 @@ class FeverUpEventsExternalSourceStrategy implements EventsExternalSourceInterfa
     public function sync(): int
     {
         $xmlContent = $this->externalEventsService->fetchExternalEvents(
-            uri: config('services.fever_provider.url'),
+            uri: config('services.test_provider.url'),
             headers: [
                 'Accept' => 'application/xml',
             ],

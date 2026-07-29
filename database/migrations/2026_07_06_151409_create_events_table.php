@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
-            $table->string('provider')->default('fever_provider');
+            $table->string('provider')->default('test_provider');
             $table->string('external_base_plan_id');    //event id
             $table->string('external_plan_id');         //session id
             $table->string('title');

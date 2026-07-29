@@ -21,7 +21,7 @@ class EventFactory extends Factory
         $maxPrice = fake()->randomFloat(2, $minPrice, 150);
 
         return [
-            'provider' => 'feverup',
+            'provider' => 'test_provider',
             'external_base_plan_id' => fake()->uuid(),
             'external_plan_id' => fake()->uuid(),
             'title' => fake()->sentence(4),

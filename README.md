@@ -1,14 +1,10 @@
-# Fever code challenge
+# Code challenge
 
-Welcome! We're thrilled to have you at this stage of the process. This challenge is designed to give us insight into your coding approach and problem-solving skills. It’s a simplified example of real-world scenarios we handle daily at Fever.
-
-## About Fever
-
-At Fever we work to bring experiences to people. We have a marketplace of plans from different providers that are curated and then consumed by multiple applications. We work hard to expand the range of experiences we offer to our customers. Consequently, we are continuously looking for new providers with great plans to integrate in our platforms. 
+Welcome! We're thrilled to have you at this stage of the process. This challenge is designed to give us insight into your coding approach and problem-solving skills. It’s a simplified example of real-world scenarios.
 
 ## The challenge
 
-Your task is to develop a microservice that integrates plans from an external provider into the Fever marketplace.
+Your task is to develop a microservice that integrates plans from an external provider into the our marketplace.
 
 Even if this is just a disposable test, imagine that somebody will pick up this code and maintain it in the future. It will evolve new features will be added, existing ones adapted, and unnecessary functionalities removed. Writing clean, scalable, and maintainable code is crucial for ensuring the sustainability of any project.
 
@@ -30,60 +26,14 @@ This API returns a list of available plans in XML format. Plans that are no long
 
 You need to **develop and expose a single endpoint**:
 
-- **API Spec:** [SwaggerHub Reference](https://app.swaggerhub.com/apis-docs/luis-pintado-feverup/backend-test/1.0.0)
 - The endpoint should accept `starts_at` and `ends_at` parameters and return only the plans within this time range.
 - Plans should be included if they were ever available (with `"sell_mode": "online"`).
 - Past plans should be retrievable even if they are no longer present in the provider’s latest response.
 - The endpoint must be performant, responding in **hundreds of milliseconds**, regardless of the state of other external services. For instance, if the external provider service is down, our search endpoint should still work as usual. Similarly, it should also respond quickly to all requests regardless of the traffic we receive.
 
-## Evaluation criteria
-
-Your solution will be evaluated holistically, with special attention to:
-
-- **Problem-Solution Fit:** How well your solution aligns with the given problem.
-- **Adherence to API Spec:** Follow the provided OpenAPI specification.
-- **Documentation:** Provide a README explaining design choices and implementation details, additional design schemas will be valued.
-- **Makefile:** Include a Makefile with a run target to simplify running the application.
-- **Code Quality:** Readability, maintainability, and adherence to best practices.
-- **Software Architecture:** Structural design choices and scalability considerations.
-- **Efficiency:** Optimize for both resources and time efficiency.
-
-## Guidelines
-
-- We strongly encourage you to **implement the solution in the language you are most comfortable with**, even if it's not Python. We've seen candidates try to adapt to Python for the sake of the challenge, but that often results in lower code quality and doesn't reflect their real strengths.
-- The application will be run on a clean machine with almost no dependencies, so make sure your app installs everything it needs to run in a simple way (one or two commands at most). We encourage to implement a docker compose file, but it is not a requirement.
-- Feel free to use any libraries, frameworks, or tools that best fit the task.
-- Submit your code in the `master` branch of this repository.
-
-### A note on AI usage
-
-Using AI tools (e.g., Cursor, Copilot, ChatGPT, Claude) is allowed. However, **we expect you to fully understand any AI-generated code** in your submission. During the interview, we will ask you to explain your design decisions, trade-offs, and implementation details. If you used AI, please briefly document how in your README.
-
-## Going the extra mile 🚀
-
-To make your solution even stronger, consider:
-
-- **Scalability:** How would you handle a scenario where the provider sends thousands of plans with hundreds of zones per plan?
-- **High Traffic:** How would your service respond to 5k-10k requests per second?
-- **Optimization Strategies:** How can the system remain performant under heavy load?
-
-You can implement these enhancements in your code or describe your approach in the README.
-
-## Need Help?
-
-If you have any questions, feel free to reach out. We’ll get back to you as soon as possible.
-
-## Feedback
-
-We value your time and effort! Please take a moment to share your thoughts on our process:
-
-[📋 Feedback Form](https://forms.gle/6NdDApby6p3hHsWp8)
-
-Thank you for participating, and good luck! 🎉
-
 ## Solution
 
-This solution implements a Laravel-based microservice that exposes a single search endpoint for Fever marketplace events.
+This solution implements a Laravel-based microservice that exposes a single search endpoint for our marketplace events.
 
 The main design decision is to keep the public search endpoint completely independent from the external provider availability. Instead of calling the provider on every API request, the application synchronizes provider data into a local database through an Artisan command. The API then reads only from local persisted data, which allows it to respond quickly even if the external provider is slow, unavailable, or returning invalid responses.
 
@@ -149,8 +99,8 @@ The application runs inside Docker, so PHP and Composer do not need to be instal
 #### 1. Clone the repository
 
 ```bash
-git clone git@github.com:FeverCodeChallenge/GuillermoFernandez.git fever
-cd fever
+git clone git@github.com:FeverCodeChallenge/GuillermoFernandez.git events
+cd events
 ```
 
 You can change the destination directory name
@@ -161,18 +111,16 @@ You can change the destination directory name
 make run
 ```
 
-⚠️ During the first run, Laravel may ask whether it should create the SQLite database file. Answer `yes`.
-
-".env" file should have these lines in some place.
+".env" file will be created with default MySql credentials, password can be modified.
 ```env
-DB_CONNECTION=sqlite
-FEVER_PROVIDER_URL=https://provider.code-challenge.feverup.com/api/events
+DB_USERNAME=root
+DB_PASSWORD=root
 ```
 
 #### 3. Populate the database with data from external provider
 
 ```bash
-docker compose exec php-fpm php artisan events:sync
+make sync-events
 ```
 
 ⚠️ It's possible that this command fails because the external API is not 100% reliable. It can be run all the times you want.
@@ -183,7 +131,7 @@ docker compose exec php-fpm php artisan events:sync
 
 #### List events
 ```bash
-http://localhost:8083/api/v1/events/search?starts_at=2021-01-31T00:00:00Z&ends_at=2021-12-31T21:00:00Z
+http://localhost:806/api/v1/events/search?starts_at=2021-01-31T00:00:00Z&ends_at=2021-12-31T21:00:00Z
 ```
 
 ### Running the tests
@@ -191,13 +139,5 @@ http://localhost:8083/api/v1/events/search?starts_at=2021-01-31T00:00:00Z&ends_a
 To run the full test suite:
 
 ```bash
-docker compose exec php-fpm php artisan test
+make test
 ```
-
-Alternatively, PHPUnit can be executed directly:
-
-```bash
-docker compose exec php-fpm ./vendor/bin/phpunit
-```
-
-

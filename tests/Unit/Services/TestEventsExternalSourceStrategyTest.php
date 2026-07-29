@@ -4,32 +4,32 @@ namespace Services;
 
 use App\Models\Event;
 use App\Services\ExternalEventsService;
-use App\Services\FeverUpEventsExternalSourceStrategy;
+use App\Services\TestEventsExternalSourceStrategy;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 use Tests\TestCase;
 
-class FeverUpEventsExternalSourceStrategyTest extends TestCase
+class TestEventsExternalSourceStrategyTest extends TestCase
 {
     use DatabaseMigrations;
 
     protected function setUp(): void
     {
         parent::setUp();
-        config()->set('services.fever_provider.url', 'https://provider.example.test/events');
+        config()->set('services.test_provider.url', 'https://provider.example.test/events');
     }
 
     public function test_it_returns_provider_name(): void
     {
         // Arrange
-        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
+        $strategy = $this->app->make(TestEventsExternalSourceStrategy::class);
 
         // Act
         $name = $strategy->name();
 
         // Assert
-        $this->assertSame('fever_provider', $name);
+        $this->assertSame('test_provider', $name);
     }
 
     public function test_it_synchronizes_online_events_from_provider(): void
@@ -62,7 +62,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
             ->once()
             ->andReturn($responseXml);
 
-        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
+        $strategy = $this->app->make(TestEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -73,7 +73,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
 
         $this->assertDatabaseHas('events', [
             [
-                'provider' => 'fever_provider',
+                'provider' => 'test_provider',
                 'external_base_plan_id' => 'base-plan-1',
                 'external_plan_id' => 'plan-1',
                 'title' => 'Online Event',
@@ -84,7 +84,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
                 'last_synced_at' => '2025-11-16 00:00:00',
             ],
             [
-                'provider' => 'fever_provider',
+                'provider' => 'test_provider',
                 'external_base_plan_id' => 'base-plan-1',
                 'external_plan_id' => 'plan-2',
                 'title' => 'Online Event',
@@ -120,7 +120,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
             ->once()
             ->andReturn($responseXml);
 
-        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
+        $strategy = $this->app->make(TestEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -159,7 +159,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
             ->once()
             ->andReturn($responseXml);
 
-        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
+        $strategy = $this->app->make(TestEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -198,7 +198,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
             ->once()
             ->andReturn($responseXml);
 
-        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
+        $strategy = $this->app->make(TestEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -233,7 +233,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
             ->once()
             ->andReturn($responseXml);
 
-        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
+        $strategy = $this->app->make(TestEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -242,7 +242,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         $this->assertSame(1, $syncedEvents);
 
         $this->assertDatabaseHas('events', [
-            'provider' => 'fever_provider',
+            'provider' => 'test_provider',
             'external_base_plan_id' => 'base-plan-1',
             'external_plan_id' => 'plan-1',
             'title' => 'Online Event',
@@ -259,7 +259,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         Carbon::setTestNow();
 
         Event::factory()->create([
-            'provider' => 'fever_provider',
+            'provider' => 'test_provider',
             'external_base_plan_id' => 'base-plan-1',
             'external_plan_id' => 'plan-1',
             'title' => 'Old Title',
@@ -290,7 +290,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
             ->once()
             ->andReturn($responseXml);
 
-        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
+        $strategy = $this->app->make(TestEventsExternalSourceStrategy::class);
 
         // Act
         $syncedEvents = $strategy->sync();
@@ -300,7 +300,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
         $this->assertDatabaseCount('events', 1);
 
         $this->assertDatabaseHas('events', [
-            'provider' => 'fever_provider',
+            'provider' => 'test_provider',
             'external_base_plan_id' => 'base-plan-1',
             'external_plan_id' => 'plan-1',
             'title' => 'Updated Title',
@@ -326,7 +326,7 @@ class FeverUpEventsExternalSourceStrategyTest extends TestCase
             ->once()
             ->andReturn($responseXml);
 
-        $strategy = $this->app->make(FeverUpEventsExternalSourceStrategy::class);
+        $strategy = $this->app->make(TestEventsExternalSourceStrategy::class);
 
         // Assert
         $this->expectException(RuntimeException::class);

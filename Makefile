@@ -22,7 +22,7 @@ migrate:
 
 permissions:
 	docker compose exec php-fpm chmod -R 775 storage bootstrap/cache database
-	docker compose exec php-fpm chown -R www-data:www-data storage bootstrap/cache database
+	docker compose exec php-fpm chown -R www-data:1000 storage bootstrap/cache database
 
 cache-clear:
 	docker compose exec php-fpm php artisan config:clear
