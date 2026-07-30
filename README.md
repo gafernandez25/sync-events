@@ -99,7 +99,7 @@ The application runs inside Docker, so PHP and Composer do not need to be instal
 #### 1. Clone the repository
 
 ```bash
-git clone git@github.com:FeverCodeChallenge/GuillermoFernandez.git events
+git clone git@github.com:gafernandez25/sync-events.git events
 cd events
 ```
 
