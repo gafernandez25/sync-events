@@ -111,7 +111,7 @@ You can change the destination directory name
 make run
 ```
 
-".env" file will be created with default database credentials, password can be modified.
+".env" file will be created with default database credentials, they can be modified.
 ```env
 DB_USERNAME=root
 DB_PASSWORD=root
