@@ -131,7 +131,7 @@ make sync-events
 
 #### List events
 ```bash
-http://localhost:806/api/v1/events/search?starts_at=2021-01-31T00:00:00Z&ends_at=2021-12-31T21:00:00Z
+http://localhost:8006/api/v1/events/search?starts_at=2021-01-31T00:00:00Z&ends_at=2021-12-31T21:00:00Z
 ```
 
 ### Running the tests
