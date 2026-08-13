@@ -2,7 +2,7 @@
 
 run: env up install key permissions cache-clear migrate
 	@echo "Application ready."
-	@echo "API available at: http://localhost:806"
+	@echo "API available at: http://localhost:8006"
 
 up:
 	docker compose down -v
